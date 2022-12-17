@@ -2,14 +2,11 @@
 
 namespace App\Filters;
 
-use CodeIgniter\API\ResponseTrait;
 use CodeIgniter\Filters\FilterInterface;
 use CodeIgniter\HTTP\RequestInterface;
 use CodeIgniter\HTTP\ResponseInterface;
-use Firebase\JWT\JWT;
-use Firebase\JWT\Key;
 
-class UserFilter implements FilterInterface
+class Cors implements FilterInterface
 {
     /**
      * Do whatever processing this filter needs to do.
@@ -26,14 +23,14 @@ class UserFilter implements FilterInterface
      *
      * @return mixed
      */
-    use ResponseTrait;
-
     public function before(RequestInterface $request, $arguments = null)
     {
-        if(session()->get('logged_in')){
-            return;
-        } else {
-            echo 'You are not authorized to access this page';
+        //
+        header("Access-Control-Allow-Origin: *");
+        header("Access-Control-Allow-Headers: X-API-KEY, Origin,X-Requested-With, Content-Type, Accept, Access-Control-Requested-Method, Authorization");
+        header("Access-Control-Allow-Methods: GET, POST, OPTIONS, PATCH, PUT, DELETE");
+        $method = $_SERVER['REQUEST_METHOD'];
+        if ($method == "OPTIONS") {
             die();
         }
     }

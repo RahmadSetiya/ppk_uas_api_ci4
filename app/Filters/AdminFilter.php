@@ -6,8 +6,6 @@ use CodeIgniter\API\ResponseTrait;
 use CodeIgniter\Filters\FilterInterface;
 use CodeIgniter\HTTP\RequestInterface;
 use CodeIgniter\HTTP\ResponseInterface;
-use Firebase\JWT\JWT;
-use Firebase\JWT\Key;
 
 class AdminFilter implements FilterInterface
 {
@@ -31,22 +29,11 @@ class AdminFilter implements FilterInterface
 
     public function before(RequestInterface $request, $arguments = null)
     {
-        $key = getenv('TOKEN_SECRET');
-        $header = $request->getServer('HTTP_AUTHORIZATION');
-        if($header){
-            try {
-                $token = explode(' ', $header)[1];
-                $decoded = JWT::decode($token, new Key($key, 'HS256'));
-                if($decoded->data->role == 'admin'){
-                    return;
-                } else {
-                    return $this->failUnauthorized('You are not authorized');
-                }
-            } catch (\Exception $e) {
-                return $this->failServerError('Something went wrong');
-            }
+        if(session()->get('role') == 'admin'){
+            return;
         } else {
-            return $this->failUnauthorized('No required token');
+            return (['message' => 'You are not authorized to access this page']);
+            die();
         }
     }
 

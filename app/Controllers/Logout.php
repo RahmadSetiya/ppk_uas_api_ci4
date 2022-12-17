@@ -2,6 +2,7 @@
 
 namespace App\Controllers;
 
+use CodeIgniter\API\ResponseTrait;
 use CodeIgniter\RESTful\ResourceController;
 
 class Logout extends ResourceController
@@ -11,10 +12,14 @@ class Logout extends ResourceController
      *
      * @return mixed
      */
+
+    use ResponseTrait;
+
     public function index()
     {
+        //destroy session and token and redirect to login page
         session()->destroy();
-        return redirect()->to('/');
+        return;
     }
 
     /**

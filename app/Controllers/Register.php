@@ -18,6 +18,7 @@ class Register extends ResourceController
     public function index()
     {
         $rules = [
+            'fullname' => 'required|min_length[3]|max_length[50]',
             'username' => 'required|min_length[3]|max_length[20]|is_unique[users.username]',
             'email' => 'required|valid_email|is_unique[users.email]',
             'password' => 'required|min_length[6]|max_length[255]',
@@ -29,6 +30,7 @@ class Register extends ResourceController
         } else {
             $model = new \App\Models\UserModel();
             $data = [
+                'fullname' => $this->request->getVar('fullname'),
                 'username' => $this->request->getVar('username'),
                 'email' => $this->request->getVar('email'),
                 'password' => password_hash($this->request->getVar('password'), PASSWORD_DEFAULT),

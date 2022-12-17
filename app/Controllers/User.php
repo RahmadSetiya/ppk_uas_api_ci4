@@ -89,7 +89,50 @@ class User extends ResourceController
      */
     public function update($id = null)
     {
-        //
+        // update user
+        $key = getenv('TOKEN_SECRET');
+        $header = $this->request->getServer('HTTP_AUTHORIZATION');
+        if($header){
+            try {
+                $token = explode(' ', $header)[1];
+                $decoded = JWT::decode($token, new Key($key, 'HS256'));
+                $model = new UserModel();
+                $user = $model->where('user_id', $decoded->data->user_id)->first();
+                if($user){
+                    $data = [
+                        'fullname' => $this->request->getVar('fullname'),
+                        'username' => $this->request->getVar('username'),
+                        'email' => $this->request->getVar('email'),
+                        'password' => password_hash($this->request->getVar('password'), PASSWORD_DEFAULT),
+                    ];
+
+                    $rules = [
+                        'fullname' => 'required|min_length[3]|max_length[50]',
+                        'username' => 'required|min_length[3]|max_length[20]',
+                        'email' => 'required|valid_email',
+                        'password' => 'required|min_length[6]|max_length[255]',
+                        'pass_confirm' => 'matches[password]'
+                    ];
+                    if(!$this->validate($rules)){
+                        return $this->fail($this->validator->getErrors());
+                    }
+
+                    $model->update($user['user_id'], $data);
+                    $user['fullname'] = $data['fullname'];
+                    $user['username'] = $data['username'];
+                    $user['email'] = $data['email'];
+                    $user['password'] = $data['password'];
+
+                    return $this->respond($user);
+                } else {
+                    return $this->failNotFound('No user found');
+                }
+            } catch (\Exception $e) {
+                return $this->failServerError('Something went wrong');
+            }
+        } else {
+            return $this->failUnauthorized('No required token');
+        }
     }
 
     /**
@@ -99,6 +142,27 @@ class User extends ResourceController
      */
     public function delete($id = null)
     {
-        //
+        // delete user
+        $key = getenv('TOKEN_SECRET');
+        $header = $this->request->getServer('HTTP_AUTHORIZATION');
+        if($header){
+            try {
+                $token = explode(' ', $header)[1];
+                $decoded = JWT::decode($token, new Key($key, 'HS256'));
+                $model = new UserModel();
+                $user = $model->where('user_id', $decoded->data->user_id)->first();
+                if($user['role'] == 'admin'){
+                    $model->delete($id);
+                    //success response
+                    return $this->respondDeleted(['status' => 200, 'message' => 'User deleted successfully']);
+                } else {
+                    return $this->failUnauthorized('You are not authorized');
+                }
+            } catch (\Exception $e) {
+                return $this->failServerError('Something went wrong');
+            }
+        } else {
+            return $this->failUnauthorized('No required token');
+        }
     }
 }
