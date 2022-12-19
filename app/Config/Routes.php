@@ -35,22 +35,30 @@ $routes->set404Override();
 
 // We get a performance increase by specifying the default
 // route since we don't have to scan directories.
-$routes->group('api', static function ($routes) {
-    $routes->get('/', 'Home::index', ['filter' => 'userfilter']);
+$routes->get('/', 'Home::index');
 
-    //register
-    $routes->post('register', 'Register::index');
-    
-    //login
-    $routes->post('login', 'Login::index');
+//register
+$routes->post('register', 'Register::index');
 
-    //logout
-    $routes->get('logout', 'Logout::index');
+//login
+$routes->post('login', 'Auth::login');
+
+//logout
+$routes->get('logout', 'Auth::logout');
+
+$routes->group('api', ['filter' => 'cors', 'tokenfilter'], static function ($routes) {
+    $routes->get('/', 'Home::index');
 
     //user
     $routes->get('user', 'User::index');
-    $routes->post('user/update', 'User::update');
-    $routes->post('user/delete/(:segment)', 'User::delete/$1', ['filter' => 'adminfilter']);
+    $routes->get('user/(:segment)', 'User::show/$1');
+    
+    //user update
+    $routes->get('user/edit/(:segment)', 'User::edit/$1', ['filter' => 'adminfilter']);
+    $routes->post('user/update/(:segment)', 'User::update/$1', ['filter' => 'adminfilter']);
+
+    //user delete
+    $routes->get('user/delete/(:segment)', 'User::delete/$1', ['filter' => 'adminfilter']);
 });
 
 /*

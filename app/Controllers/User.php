@@ -5,8 +5,6 @@ namespace App\Controllers;
 use CodeIgniter\RESTful\ResourceController;
 use CodeIgniter\API\ResponseTrait;
 use App\Models\UserModel;
-use Firebase\JWT\JWT;
-use Firebase\JWT\Key;
 
 class User extends ResourceController
 {
@@ -20,26 +18,7 @@ class User extends ResourceController
 
     public function index()
     {
-        //
-        $key = getenv('TOKEN_SECRET');
-        $header = $this->request->getServer('HTTP_AUTHORIZATION');
-        if($header){
-            try {
-                $token = explode(' ', $header)[1];
-                $decoded = JWT::decode($token, new Key($key, 'HS256'));
-                $model = new UserModel();
-                $user = $model->where('user_id', $decoded->data->user_id)->first();
-                if($user){
-                    return $this->respond($user);
-                } else {
-                    return $this->failNotFound('No user found');
-                }
-            } catch (\Exception $e) {
-                return $this->failServerError('Something went wrong');
-            }
-        } else {
-            return $this->failUnauthorized('No required token');
-        }
+        
     }
 
     /**
@@ -49,7 +28,22 @@ class User extends ResourceController
      */
     public function show($id = null)
     {
-        //
+        if(session()->get('role') == 'admin'){
+            if($id == null){
+                $model = new UserModel();
+                $user = $model->findAll();
+                return $this->respond($user);
+            } else{
+                $model = new UserModel();
+                $user = $model->where('user_id', $id)->first();
+                if($user == null){
+                    return $this->failNotFound('No user found');
+                }
+                return $this->respond($user);
+            }
+        } else {
+            return $this->failUnauthorized('You are not authorized');
+        }
     }
 
     /**
@@ -79,7 +73,17 @@ class User extends ResourceController
      */
     public function edit($id = null)
     {
-        //
+        if(session()->get('role') == 'admin'){
+            $model = new UserModel();
+            $user = $model->where('user_id', $id)->first();
+            if($user){
+                return $this->respond($user);
+            } else {
+                return $this->failNotFound('No user found');
+            }
+        } else {
+            return $this->failUnauthorized('You are not authorized');
+        }
     }
 
     /**
@@ -90,48 +94,37 @@ class User extends ResourceController
     public function update($id = null)
     {
         // update user
-        $key = getenv('TOKEN_SECRET');
-        $header = $this->request->getServer('HTTP_AUTHORIZATION');
-        if($header){
-            try {
-                $token = explode(' ', $header)[1];
-                $decoded = JWT::decode($token, new Key($key, 'HS256'));
-                $model = new UserModel();
-                $user = $model->where('user_id', $decoded->data->user_id)->first();
-                if($user){
-                    $data = [
-                        'fullname' => $this->request->getVar('fullname'),
-                        'username' => $this->request->getVar('username'),
-                        'email' => $this->request->getVar('email'),
-                        'password' => password_hash($this->request->getVar('password'), PASSWORD_DEFAULT),
-                    ];
+        if(session()->get('role') == 'admin'){
+            $model = new UserModel();
+            $user = $model->where('user_id', $id)->first();
+            if($user){
+                $data = [
+                    'username' => $this->request->getVar('username'),
+                    'fullname' => $this->request->getVar('fullname'),
+                    'email' => $this->request->getVar('email'),
+                    'password' => password_hash($this->request->getVar('password'), PASSWORD_DEFAULT),
+                    'pass_confirm' => password_hash($this->request->getVar('pass_confirm'), PASSWORD_DEFAULT),
+                ];
 
-                    $rules = [
-                        'fullname' => 'required|min_length[3]|max_length[50]',
-                        'username' => 'required|min_length[3]|max_length[20]',
-                        'email' => 'required|valid_email',
-                        'password' => 'required|min_length[6]|max_length[255]',
-                        'pass_confirm' => 'matches[password]'
-                    ];
-                    if(!$this->validate($rules)){
-                        return $this->fail($this->validator->getErrors());
-                    }
+                $rules = [
+                    'fullname' => 'required|min_length[3]|max_length[50]',
+                    'username' => 'required|min_length[3]|max_length[20]|is_unique[users.username]',
+                    'email' => 'required|valid_email',
+                    'password' => 'required|min_length[6]|max_length[255]',
+                    'pass_confirm' => 'matches[password]'
+                ];
 
-                    $model->update($user['user_id'], $data);
-                    $user['fullname'] = $data['fullname'];
-                    $user['username'] = $data['username'];
-                    $user['email'] = $data['email'];
-                    $user['password'] = $data['password'];
-
-                    return $this->respond($user);
-                } else {
-                    return $this->failNotFound('No user found');
+                if(!$this->validate($rules)){
+                    return $this->fail($this->validator->getErrors());
                 }
-            } catch (\Exception $e) {
-                return $this->failServerError('Something went wrong');
+
+                $model->update($id, $data);
+                return $this->respondUpdated($data);
+            } else {
+                return $this->failNotFound('No user found');
             }
         } else {
-            return $this->failUnauthorized('No required token');
+            return $this->failUnauthorized('You are not authorized');
         }
     }
 
@@ -143,26 +136,17 @@ class User extends ResourceController
     public function delete($id = null)
     {
         // delete user
-        $key = getenv('TOKEN_SECRET');
-        $header = $this->request->getServer('HTTP_AUTHORIZATION');
-        if($header){
-            try {
-                $token = explode(' ', $header)[1];
-                $decoded = JWT::decode($token, new Key($key, 'HS256'));
-                $model = new UserModel();
-                $user = $model->where('user_id', $decoded->data->user_id)->first();
-                if($user['role'] == 'admin'){
-                    $model->delete($id);
-                    //success response
-                    return $this->respondDeleted(['status' => 200, 'message' => 'User deleted successfully']);
-                } else {
-                    return $this->failUnauthorized('You are not authorized');
-                }
-            } catch (\Exception $e) {
-                return $this->failServerError('Something went wrong');
+        if(session()->get('role') == 'admin'){
+            $model = new UserModel();
+            $user = $model->where('user_id', $id)->first();
+            if($user){
+                $model->delete($id);
+                return $this->respondDeleted($user);
+            } else {
+                return $this->failNotFound('No user found');
             }
         } else {
-            return $this->failUnauthorized('No required token');
+            return $this->failUnauthorized('You are not authorized');
         }
     }
 }

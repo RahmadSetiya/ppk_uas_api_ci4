@@ -26,6 +26,7 @@ class Filters extends BaseConfig
         'adminfilter'   => \App\Filters\AdminFilter::class,
         'userfilter'    => \App\Filters\UserFilter::class,
         'cors'          => \App\Filters\Cors::class,
+        'tokenfilter'   => \App\Filters\TokenFilter::class,
     ];
 
     /**
@@ -40,6 +41,14 @@ class Filters extends BaseConfig
             // 'csrf',
             // 'invalidchars',
             'cors',
+            'tokenfilter' => [
+                'except' => [
+                    'login', 
+                    'register',
+                    'logout',
+                    '/',
+                ]
+            ],
         ],
         'after' => [
             'toolbar',

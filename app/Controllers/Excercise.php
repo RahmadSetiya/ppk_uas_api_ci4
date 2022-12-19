@@ -2,10 +2,13 @@
 
 namespace App\Controllers;
 
-use CodeIgniter\API\ResponseTrait;
 use CodeIgniter\RESTful\ResourceController;
+use CodeIgniter\API\ResponseTrait;
+use App\Models\Excercise as ExcerciseModel;
+use Firebase\JWT\JWT;
+use Firebase\JWT\Key;
 
-class Logout extends ResourceController
+class Excercise extends ResourceController
 {
     /**
      * Return an array of resource objects, themselves in array format
@@ -17,9 +20,26 @@ class Logout extends ResourceController
 
     public function index()
     {
-        //destroy session and token and redirect to login page
-        session()->destroy();
-        return;
+        //
+        $key = getenv('TOKEN_SECRET');
+        $header = $this->request->getServer('HTTP_AUTHORIZATION');
+        if($header){
+            try {
+                $token = explode(' ', $header)[1];
+                $decoded = JWT::decode($token, new Key($key, 'HS256'));
+                $model = new ExcerciseModel();
+                $excercise = $model->where('user_id', $decoded->data->user_id)->findAll();
+                if($excercise){
+                    return $this->respond($excercise);
+                } else {
+                    return $this->failNotFound('No excercise found');
+                }
+            } catch (\Exception $e) {
+                return $this->failServerError('Something went wrong');
+            }
+        } else {
+            return $this->failUnauthorized('No required token');
+        }
     }
 
     /**
