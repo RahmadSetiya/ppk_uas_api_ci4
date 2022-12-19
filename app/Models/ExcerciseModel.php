@@ -16,9 +16,10 @@ class ExcerciseModel extends Model
     protected $protectFields    = true;
     protected $allowedFields    = [
         'excercise_id',
-        'routine_id',
+        'user_id',
         'name',
         'type',
+        'datetime',
         'is_done',
     ];
 

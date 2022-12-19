@@ -15,6 +15,10 @@ class User extends Migration
                 'unsigned'       => true,
                 'auto_increment' => true,
             ],
+            'fullname' => [
+                'type'       => 'VARCHAR',
+                'constraint' => '255',
+            ],
             'username' => [
                 'type'       => 'VARCHAR',
                 'constraint' => '255',

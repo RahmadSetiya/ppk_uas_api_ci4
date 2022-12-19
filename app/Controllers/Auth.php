@@ -26,15 +26,21 @@ class Auth extends BaseController
             if (password_verify($this->request->getVar('password'), $user['password'])) {
                 $jwt = new JWTCI4();
                 $token = $jwt->token($user);
-                //set session
-                $session = session();
-                $session->set('user_id', $user['user_id']);
-                $session->set('username', $user['username']);
-                $session->set('fullname', $user['fullname']);
-                $session->set('email', $user['email']);
-                $session->set('role', $user['role']);
-                $session->set('token', $token);
-                return $this->response->setJSON(['token' => $token]);
+
+                $ses_data = [
+                    'user_id'       => $user['user_id'],
+                    'username' => $user['username'],
+                    'email'    => $user['email'],
+                    'role'     => $user['role'],
+                    'token'    => $token,
+                ];
+
+                $this->session->set($ses_data);
+                return $this->response->setJSON([
+                    'success' => true,
+                    'data' => $ses_data,
+                    "message" => "Login success",
+                ])->setStatusCode(200);
             }
         } else {
             return $this->response->setJSON([
@@ -47,6 +53,6 @@ class Auth extends BaseController
 
     public function logout(){
         session()->destroy();
-        return redirect()->to('api/');
+        return redirect()->to('/');
     }
 }

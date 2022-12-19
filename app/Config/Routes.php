@@ -59,6 +59,29 @@ $routes->group('api', ['filter' => 'cors', 'tokenfilter'], static function ($rou
 
     //user delete
     $routes->get('user/delete/(:segment)', 'User::delete/$1', ['filter' => 'adminfilter']);
+
+    //excercise
+    $routes->get('excercise', 'Excercise::index');
+    $routes->get('excercise/(:segment)', 'Excercise::show/$1');
+
+    //excercise show by
+    $routes->get('excercise/sort/user/(:num)', 'Excercise::show_by_user/$1');
+    $routes->get('excercise/sort/type/(:segment)', 'Excercise::show_by_type/$1');
+    $routes->get('excercise/sort/done/(:num)', 'Excercise::show_by_done/$1');
+    $routes->get('excercise/sort/do/(:num)', 'Excercise::show_by_not_done/$1');
+    $routes->get('excercise/sort/date/(:segment)', 'Excercise::show_by_date/$1');
+
+    //excercise create
+    $routes->post('excercise/create', 'Excercise::create');
+
+    //excercise update
+    $routes->post('excercise/update/(:segment)', 'Excercise::update/$1');
+
+    //update excerise is done
+    $routes->get('excercise/done/(:segment)', 'Excercise::update_is_done/$1');
+
+    //excercise delete
+    $routes->get('excercise/delete/(:segment)', 'Excercise::delete/$1');
 });
 
 /*

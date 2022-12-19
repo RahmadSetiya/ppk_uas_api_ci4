@@ -23,22 +23,27 @@ class Stat extends Migration
             'set' => [
                 'type'       => 'INT',
                 'constraint' => '255',
+                'default'    => 0,
             ],
             'reps' => [
                 'type'       => 'INT',
                 'constraint' => '255',
+                'default'    => 0,
             ],
             'duration' => [
                 'type'       => 'INT',
                 'constraint' => '255',
+                'default'    => 0,
             ],
             'weight' => [
                 'type'       => 'INT',
                 'constraint' => '255',
+                'default'    => 0,
             ],
         ]);
 
         $this->forge->addKey('stat_id', true);
+        $this->forge->addForeignKey('excercise_id', 'excercises', 'excercise_id', 'CASCADE', 'CASCADE');
         $this->forge->createTable('stats');
     }
 

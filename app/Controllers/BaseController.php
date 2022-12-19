@@ -28,6 +28,8 @@ abstract class BaseController extends Controller
      */
     protected $request;
 
+    protected $session;
+
     /**
      * An array of helpers to be loaded automatically upon
      * class instantiation. These helpers will be available
@@ -47,6 +49,8 @@ abstract class BaseController extends Controller
 
         // Preload any models, libraries, etc, here.
 
-        // E.g.: $this->session = \Config\Services::session();
+        // E.g.: 
+        $this->session = \Config\Services::session();
     }
+
 }

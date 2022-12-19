@@ -28,13 +28,18 @@ class Excescise extends Migration
                 'type'       => 'VARCHAR',
                 'constraint' => '255',
             ],
+            'datetime' => [
+                'type'       => 'DATETIME',
+                'default'    => null,
+            ],
             'is_done' => [
-                'type'       => 'INT',
-                'constraint' => '255',
+                'type'       => 'BOOLEAN',
+                'default'    => false,
             ],
         ]);
 
         $this->forge->addKey('excercise_id', true);
+        $this->forge->addForeignKey('user_id', 'users', 'user_id', 'CASCADE', 'CASCADE');
         $this->forge->createTable('excercises');
     }
 
